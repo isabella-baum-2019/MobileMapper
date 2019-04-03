@@ -9,7 +9,7 @@
 import UIKit
 import MapKit
 
-class ViewController: UIViewController, CLLocationManagerDelegate {
+class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
 
     
     @IBOutlet weak var mapView: MKMapView!
@@ -60,5 +60,45 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             }
         }
     }
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        if annotation.isEqual(mapView.userLocation){
+            return nil
+        }
+        
+        var pin = MKAnnotationView(annotation: annotation, reuseIdentifier: nil)
+        if let title = annotation.title, let actualTitle = title{
+            if actualTitle == "Franco Park"{
+               pin.image = UIImage(named: "MobileMakerIconPinImage")
+            } else{
+                pin = MKAnnotationView(annotation: annotation, reuseIdentifier: nil)
+            }
+        }
+        
+        pin.canShowCallout = true
+        let button = UIButton(type: .detailDisclosure)
+        pin.rightCalloutAccessoryView = button
+        return pin
+    }
+    
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        var currentMapItem = MKMapItem()
+        if let title = view.annotation?.title, let parkNmae = title{
+            for mapItem in parks{
+                if mapItem.name == parkNmae{
+                    currentMapItem = mapItem
+                }
+            }
+        }
+        let placemark = currentMapItem.placemark
+        print(placemark)
+        if let parkName = placemark.name, let address = placemark.addressDictionary, let Street = address["Street"] as? String{
+            let alert = UIAlertController(title: parkName, message: Street, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    
+    
 }
 
