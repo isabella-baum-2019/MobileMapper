@@ -19,6 +19,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     let locationManager = CLLocationManager()
     var currentLocation : CLLocation!
     
+    var initialRegion: MKCoordinateRegion!
+    var isInitialMapLoad: Bool = true
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -77,10 +80,18 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         pin.canShowCallout = true
         let button = UIButton(type: .detailDisclosure)
         pin.rightCalloutAccessoryView = button
+        let zoomButton = UIButton(type: .contactAdd)
+        pin.leftCalloutAccessoryView = zoomButton
         return pin
     }
     
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        let buttonPressed = control as! UIButton
+        if buttonPressed.buttonType == .contactAdd{
+            mapView.setRegion(initialRegion, animated: true)
+            return
+        }
+        
         var currentMapItem = MKMapItem()
         if let title = view.annotation?.title, let parkNmae = title{
             for mapItem in parks{
@@ -97,7 +108,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             present(alert, animated: true, completion: nil)
         }
     }
-    
+    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
+        if isInitialMapLoad{
+            initialRegion = MKCoordinateRegion(center: mapView.centerCoordinate, span: mapView.region.span)
+            isInitialMapLoad = false
+        }
+    }
     
     
 }
